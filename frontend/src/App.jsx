@@ -26,8 +26,14 @@ function App() {
     body: JSON.stringify({ username, password })
   });
 
-  const data = await response.text();
-  alert(data);
+  const status = response.status;
+  if (status === 200) {
+    alert('Inicio de sesión exitoso');
+  } else if (status === 401) {
+    alert('Nombre de usuario o contraseña incorrectos');
+  } else {
+    alert('Error en el servidor');
+  }
 }
 
   return (
