@@ -4,23 +4,31 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const cors = require('cors');
+const { authenticateToken } = require('./utils/auth');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const loginRouter = require('./routes/login');
 
 var app = express();
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade'); 
+app.set('view engine', 'jade');
 
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use('/api', function(req, res, next) {
+  if (req.path === '/login') {
+    return next();
+  }
+  return authenticateToken(req, res, next);
+});
 
 app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
