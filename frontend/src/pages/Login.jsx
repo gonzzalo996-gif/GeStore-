@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router';
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [registerMode, setRegisterMode] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -22,7 +23,8 @@ function Login() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/api/login', {
+      const endpoint = registerMode ? 'http://localhost:3000/api/users/register' : 'http://localhost:3000/api/login';
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -33,10 +35,32 @@ function Login() {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        throw new Error(data.message || 'No se pudo iniciar sesión');
+        throw new Error(data.message || (registerMode ? 'No se pudo registrar el usuario' : 'No se pudo iniciar sesión'));
+      }
+
+      if (registerMode) {
+        const loginResponse = await fetch('http://localhost:3000/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
+
+        const loginData = await loginResponse.json().catch(() => ({}));
+
+        if (!loginResponse.ok) {
+          throw new Error(loginData.message || 'No se pudo iniciar sesión después del registro');
+        }
+
+        localStorage.setItem('token', loginData.token);
+        localStorage.setItem('user', JSON.stringify(loginData.user));
+        navigate(from, { replace: true });
+        return;
       }
 
       localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
       navigate(from, { replace: true });
     } catch (err) {
       setError(err.message || 'Error en el servidor');
@@ -49,8 +73,8 @@ function Login() {
     <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light px-3">
       <div className="card shadow-lg border-0" style={{ width: '100%', maxWidth: '420px' }}>
         <div className="card-body p-4 p-md-5">
-          <h2 className="card-title text-center mb-3">Iniciar sesión</h2>
-          <p className="text-muted text-center mb-4">Accede al panel de GeStore</p>
+          <h2 className="card-title text-center mb-3">{registerMode ? 'Crear cuenta' : 'Iniciar sesión'}</h2>
+          <p className="text-muted text-center mb-4">{registerMode ? 'Registra un nuevo usuario con rol cliente' : 'Accede al panel de GeStore'}</p>
 
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
@@ -82,7 +106,11 @@ function Login() {
             {error ? <div className="alert alert-danger py-2">{error}</div> : null}
 
             <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-              {loading ? 'Ingresando...' : 'Ingresar'}
+              {loading ? (registerMode ? 'Creando...' : 'Ingresando...') : (registerMode ? 'Registrar' : 'Ingresar')}
+            </button>
+
+            <button type="button" className="btn btn-link w-100 mt-2" onClick={() => setRegisterMode(!registerMode)}>
+              {registerMode ? 'Ya tengo cuenta' : 'Crear una cuenta'}
             </button>
           </form>
         </div>

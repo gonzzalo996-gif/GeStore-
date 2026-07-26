@@ -24,7 +24,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api', function(req, res, next) {
-  if (req.path === '/login') {
+  if (req.path === '/login' || req.path === '/users/register') {
     return next();
   }
   return authenticateToken(req, res, next);

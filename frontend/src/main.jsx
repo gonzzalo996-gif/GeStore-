@@ -7,6 +7,7 @@ import './index.css';
 import Dashboard from './pages/Dashboard.jsx';
 import Login from './pages/Login.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import Users from './pages/Users.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -19,6 +20,14 @@ createRoot(document.getElementById('root')).render(
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <Users />
             </ProtectedRoute>
           }
         />

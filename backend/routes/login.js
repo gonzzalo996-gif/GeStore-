@@ -50,12 +50,13 @@ router.post('/', async function(req, res, next) {
       return res.status(401).json({ message: 'Nombre de usuario o contraseña incorrectos' });
     }
 
-    const token = signToken({ id: user.id, username: user.username });
+    const role = user.role || (user.username === fallbackUser.username ? 'admin' : 'cliente');
+    const token = signToken({ id: user.id, role, username: user.username });
 
     return res.json({
       message: 'Inicio de sesión exitoso',
       token,
-      user: { id: user.id, username: user.username }
+      user: { id: user.id, role, username: user.username }
     });
   } catch (error) {
     console.error(error);
